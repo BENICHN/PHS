@@ -264,6 +264,7 @@ testWord (Word enws frws, b) = do
 
 runTest :: [(Word, Bool)] -> IO String
 runTest ws = do
+  clearScreen
   res <- mapM testWord ws
   let l = length ws
       score = length . filter id $ res

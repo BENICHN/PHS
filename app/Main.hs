@@ -34,6 +34,7 @@ main' ignoreArgs = do
         Just i -> return $ args !! (i + 1)
         Nothing -> promptMax
   putStrLn ("To make these choices again, you can run the program with the folowwing arguments : --hide --choice " ++ choice ++ " --mode " ++ mode ++ " --maxnum " ++ maxnum) `withColor` (Vivid, Yellow)
+  getLine
   start gen wmap choice mode maxnum
 
 start :: RandomGen b => b -> WordMap -> String -> String -> String -> IO ()
