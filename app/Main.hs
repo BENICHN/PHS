@@ -16,21 +16,21 @@ main' ignoreArgs = do
   (wmap, items) <- getDatabaseContents
   if not ignoreArgs && "--hide" `elem` args then return () else displayContents items
   choice <-
-    if ignoreArgs then promptChoice wmap
-    else
-      case "--choice" `elemIndex` args of
+    if ignoreArgs
+      then promptChoice wmap
+      else case "--choice" `elemIndex` args of
         Just i -> return $ args !! (i + 1)
         Nothing -> promptChoice wmap
   mode <-
-    if ignoreArgs then promptMode
-    else
-      case "--mode" `elemIndex` args of
+    if ignoreArgs
+      then promptMode
+      else case "--mode" `elemIndex` args of
         Just i -> return $ args !! (i + 1)
         Nothing -> promptMode
   maxnum <-
-    if ignoreArgs then promptMax
-    else
-      case "--maxnum" `elemIndex` args of
+    if ignoreArgs
+      then promptMax
+      else case "--maxnum" `elemIndex` args of
         Just i -> return $ args !! (i + 1)
         Nothing -> promptMax
   putStrLn ("To make these choices again, you can run the program with the folowwing arguments : --hide --choice " ++ choice ++ " --mode " ++ mode ++ " --maxnum " ++ maxnum) `withColor` (Vivid, Yellow)
@@ -43,9 +43,10 @@ start gen wmap choice mode maxnum =
       wordstotest = getRandomWords gen chosenwords maxnum
       modes = getModes gen mode $ length wordstotest
       ws = zip wordstotest modes
-  in runTest ws >>= end
+   in runTest ws >>= end
   where
-    end "R" = start gen wmap choice mode maxnum
-    end "N" = getStdGen >>= \g -> start g wmap choice mode maxnum
-    end "C" = main' True
-    end _ = return ()
+    end s
+      | s `elem` ["R", "r"] = start gen wmap choice mode maxnum
+      | s `elem` ["N", "n"] = getStdGen >>= \g -> start g wmap choice mode maxnum
+      | s `elem` ["C", "c"] = main' True
+      | otherwise = return ()
