@@ -232,6 +232,11 @@ promptChoice wmap = do
   putStrLn "Which should be included ? (separated by a space)"
   getLine
 
+promptEnd :: IO String
+promptEnd = do
+  putStrLn "R : recommencer la série    N : recommencer avec une nouvelle liste de mots aléatoire    C : retour aux paramètres de la série"
+  getLine
+
 testWord :: (Word, Bool) -> IO Bool
 testWord (Word enws frws, b) = do
   let (l1, l2) = if b then (frws, enws) else (enws, frws)
@@ -257,12 +262,11 @@ testWord (Word enws frws, b) = do
       putStrLn ""
   return ok
 
-runTest :: [(Word, Bool)] -> IO ()
+runTest :: [(Word, Bool)] -> IO String
 runTest ws = do
   res <- mapM testWord ws
   let l = length ws
       score = length . filter id $ res
       rat = 100 * fromIntegral score / fromIntegral l
   putStrLn (show score ++ "/" ++ show l ++ " soit " ++ show (round rat) ++ "%") `withColor` (Vivid, Magenta)
-  putStrLn "Appuyez sur 'entrer' pour recommencer..."
-  getLine >> runTest ws
+  promptEnd
