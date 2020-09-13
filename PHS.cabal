@@ -4,26 +4,24 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1d25e71ea1462039de1c31a019904d064b198d2f14d6862d47646152d0d40ffc
+-- hash: d665240a08e61cb3eb2a37694dfb95c597e49231cecf79af9885ed298df0d6a1
 
 name:           PHS
-version:        0.1.0.0
+version:        0.0.20200913.1700
 description:    Please see the README on GitHub at <https://github.com/githubuser/PHS#readme>
-homepage:       https://github.com/githubuser/PHS#readme
-bug-reports:    https://github.com/githubuser/PHS/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2020 Author name here
-license:        BSD3
-license-file:   LICENSE
+homepage:       https://github.com/BENICHN/PHS#readme
+bug-reports:    https://github.com/BENICHN/PHS/issues
+author:         BENICHN
+maintainer:     BENICHN
+copyright:      2020 BENICHN
+license:        MIT
 build-type:     Simple
 extra-source-files:
     README.md
-    ChangeLog.md
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/PHS
+  location: https://github.com/BENICHN/PHS
 
 library
   exposed-modules:
