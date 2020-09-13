@@ -87,7 +87,7 @@ getWord tks =
   where
     remor = map (\(TString s) -> s) . filter (/= TOr)
 
-parseWordMap :: [Token] -> WordMap
+parseWordMap :: [Token] -> (WordMap, Int)
 parseWordMap tokens =
   pwm Nothing Nothing Nothing tokens
   where
@@ -96,8 +96,9 @@ parseWordMap tokens =
     pwm c@(Just (cn, ch)) p _ (TSection : TString n : TEq : TString s : ts) = pwm c p (Just (Chapter cn ch, read n, s)) ts
     pwm c p s (TWord : ts) =
       let (welems, rest) = splitWhen (`elem` [TChapter, TPage, TSection, TWord]) ts
-       in insertWordWithItems c p s (getWord welems) $ pwm c p s rest
-    pwm _ _ _ _ = empty
+          (wrest, crest) = pwm c p s rest
+       in (insertWordWithItems c p s (getWord welems) wrest, crest + 1)
+    pwm _ _ _ _ = (empty, 0)
 
 insertWordWithItems :: Maybe (Int, String) -> Maybe Int -> Maybe (Item, Int, String) -> Word -> WordMap -> WordMap
 insertWordWithItems (Just (c, ch)) p s w wm = insertInMapOfList (Chapter c ch) w $ insertWordWithItems Nothing p s w wm
@@ -199,37 +200,38 @@ atRandIndex l = do
 
 -- Prompting user
 
-getDatabaseContents :: IO (WordMap, ItemMap)
+getDatabaseContents :: IO (WordMap, Int, ItemMap)
 getDatabaseContents = do
   files <- (getCurrentDirectory >>= getDirectoryContents)
   contents <- mapM readFile $ filter ((== ".pehaut") . takeExtension) files
   let tokens = concatMap (tokenizeLineWords . words) contents
-      wmap = parseWordMap tokens
+      (wmap, count) = parseWordMap tokens
       items = scanItems $ keys wmap
-  return (wmap, items)
+  return (wmap, count, items)
 
-displayContents :: ItemMap -> IO ()
-displayContents items = do
-  putStrLn "Hi, here are the avaliable contents :"
-  putStrLn $ showItems items
+displayContents :: ItemMap -> Int -> IO ()
+displayContents items count = do
+  putStr (show count) `withColor` (Vivid, Yellow)
+  putStrLn " mots disponibles :"
+  putStrLn (showItems items) `withColor` (Vivid, Yellow)
 
 promptMode :: IO String
 promptMode = do
-  putStrLn "In which mode do you want to run ?"
+  putStrLn "Dans quel mode faire le test ?"
   putStrLn "1 : Fr -> En"
   putStrLn "2 : En -> Fr"
   putStrLn "3 : Fr <-> En, 50/50"
-  putStrLn "4 : Fr <-> En, Random"
+  putStrLn "4 : Fr <-> En, Aléatoire"
   getLine
 
 promptMax :: IO String
 promptMax = do
-  putStrLn "Max number of words ('all' for testing all the words of the selected parts) :"
+  putStrLn "Nombre max de mots ('all' pour inclure tous les mots choisis) :"
   getLine
 
 promptChoice :: p -> IO String
 promptChoice wmap = do
-  putStrLn "Which should be included ? (separated by a space)"
+  putStrLn "Quels contenus inclure ? (exemple : s15.1-9 p206 s15.17)"
   getLine
 
 promptEnd :: IO String
