@@ -21,6 +21,8 @@ instance Show Item where
 
 data Word = Word [String] [String] deriving (Show, Eq)
 
+type WordTest = (Word, Bool)
+
 data Token = TChapter | TPage | TSection | TString String | TEq | TOr | TWord deriving (Show, Eq)
 
 type WordMap = Map Item [Word]
@@ -229,18 +231,18 @@ promptMax = do
   putStrLn "Nombre max de mots ('all' pour inclure tous les mots choisis) :"
   getLine
 
-promptChoice :: p -> IO String
-promptChoice wmap = do
+promptChoice :: IO String
+promptChoice = do
   putStrLn "Quels contenus inclure ? (exemple : s15.1-9 p206 s15.17)"
   getLine
 
 promptEnd :: IO String
 promptEnd = do
-  putStrLn "R : recommencer la série    N : recommencer avec une nouvelle liste de mots aléatoire    C : retour aux paramètres de la série"
+  putStrLn "R : recommencer la série    N : recommencer avec une nouvelle liste de mots aléatoire    X : recommencer les mots ratés    C : retour aux paramètres de la série"
   getLine
 
-testWord :: (Word, Bool) -> IO Bool
-testWord (Word enws frws, b) = do
+testWord :: WordTest -> IO (Maybe WordTest)
+testWord w@(Word enws frws, b) = do
   let (l1, l2) = if b then (frws, enws) else (enws, frws)
   w1 <- atRandIndex l1
   if b
@@ -262,14 +264,14 @@ testWord (Word enws frws, b) = do
       putStr "The correct answers were : "
       sequence_ . intersperse (putStr ", or, ") . map (\s -> putStr s `withColor` (Vivid, Cyan)) $ l2
       putStrLn ""
-  return ok
+  return $ if ok then Nothing else Just w
 
-runTest :: [(Word, Bool)] -> IO String
+runTest :: [WordTest] -> IO [WordTest]
 runTest ws = do
   clearScreen
   res <- mapM testWord ws
   let l = length ws
-      score = length . filter id $ res
+      score = length . filter (== Nothing) $ res
       rat = 100 * fromIntegral score / fromIntegral l
   putStrLn (show score ++ "/" ++ show l ++ " soit " ++ show (round rat) ++ "%") `withColor` (Vivid, Magenta)
-  promptEnd
+  return $ delnth res

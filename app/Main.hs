@@ -1,3 +1,5 @@
+{-# LANGUAGE MultiWayIf #-}
+
 module Main where
 
 import Data.List (elemIndex)
@@ -9,46 +11,47 @@ import System.Random (RandomGen, getStdGen)
 main :: IO ()
 main = main' False
 
+getArg args arg prompt ignoreArgs =
+  if ignoreArgs
+    then prompt
+    else case arg `elemIndex` args of
+      Just i -> return $ args !! (i + 1)
+      Nothing -> prompt
+
 main' :: Bool -> IO ()
 main' ignoreArgs = do
   args <- getArgs
-  gen <- getStdGen
   (wmap, count, items) <- getDatabaseContents
   if not ignoreArgs && "--hide" `elem` args then return () else displayContents items count
-  choice <-
-    if ignoreArgs
-      then promptChoice wmap
-      else case "--choice" `elemIndex` args of
-        Just i -> return $ args !! (i + 1)
-        Nothing -> promptChoice wmap
-  mode <-
-    if ignoreArgs
-      then promptMode
-      else case "--mode" `elemIndex` args of
-        Just i -> return $ args !! (i + 1)
-        Nothing -> promptMode
-  maxnum <-
-    if ignoreArgs
-      then promptMax
-      else case "--maxnum" `elemIndex` args of
-        Just i -> return $ args !! (i + 1)
-        Nothing -> promptMax
+  choice <- getArg args "--choice" promptChoice ignoreArgs
+  mode <- getArg args "--mode" promptMode ignoreArgs
+  maxnum <- getArg args "--maxnum" promptMax ignoreArgs
   putStr "Pour refaire ces choix, exécutez le programme avec la commande suivante : "
   putStrLn ("--hide --choice " ++ choice ++ " --mode " ++ mode ++ " --maxnum " ++ maxnum) `withColor` (Vivid, Magenta)
   putStrLn "Appuyez sur entrer pour démarrer le test..."
   getLine
-  start gen wmap choice mode maxnum
+  start wmap choice mode maxnum
 
-start :: RandomGen b => b -> WordMap -> String -> String -> String -> IO ()
-start gen wmap choice mode maxnum =
+start :: WordMap -> String -> String -> String -> IO ()
+start wmap choice mode maxnum = do
+  gen <- getStdGen
   let chosenwords = parseUserChoice wmap choice
       wordstotest = getRandomWords gen chosenwords maxnum
       modes = getModes gen mode $ length wordstotest
       ws = zip wordstotest modes
-   in runTest ws >>= end
+  s <- runTests ws
+  if
+      | s `elem` ["N", "n"] -> start wmap choice mode maxnum
+      | s `elem` ["C", "c"] -> main' True
+      | otherwise -> return ()
+
+runTests :: [WordTest] -> IO String
+runTests ws = do
+  rest <- runTest ws
+  s <- promptEnd
+  end s rest
   where
-    end s
-      | s `elem` ["R", "r"] = start gen wmap choice mode maxnum
-      | s `elem` ["N", "n"] = getStdGen >>= \g -> start g wmap choice mode maxnum
-      | s `elem` ["C", "c"] = main' True
-      | otherwise = return ()
+    end s rest
+      | s `elem` ["R", "r"] = runTests ws
+      | s `elem` ["X", "x"] = runTests rest
+      | otherwise = return s
