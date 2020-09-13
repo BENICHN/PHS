@@ -33,7 +33,9 @@ main' ignoreArgs = do
       else case "--maxnum" `elemIndex` args of
         Just i -> return $ args !! (i + 1)
         Nothing -> promptMax
-  putStrLn ("To make these choices again, you can run the program with the folowwing arguments : --hide --choice " ++ choice ++ " --mode " ++ mode ++ " --maxnum " ++ maxnum) `withColor` (Vivid, Yellow)
+  putStr "To make these choices again, you can run the program with the folowwing arguments : "
+  putStrLn ("--hide --choice " ++ choice ++ " --mode " ++ mode ++ " --maxnum " ++ maxnum) `withColor` (Vivid, Yellow)
+  putStrLn "Press enter to start the test ..."
   getLine
   start gen wmap choice mode maxnum
 
