@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d665240a08e61cb3eb2a37694dfb95c597e49231cecf79af9885ed298df0d6a1
+-- hash: 73630d41961abc30c11a4fe433fa896c1c8cf347f8333f06d59b2c2f5a17498c
 
 name:           PHS
-version:        0.0.20200913.1700
+version:        0.0.20200913.1735
 description:    Please see the README on GitHub at <https://github.com/githubuser/PHS#readme>
 homepage:       https://github.com/BENICHN/PHS#readme
 bug-reports:    https://github.com/BENICHN/PHS/issues
