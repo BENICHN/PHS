@@ -1,12 +1,11 @@
 module PHSLib where
 
-import Data.List (elemIndex, find, groupBy, intercalate, intersperse, nub, union)
-import Data.Map (Map, elems, empty, fromList, insert, keys, lookup, member, singleton, toList)
+import Data.List (find, intersperse, nub)
+import Data.Map (Map, empty, fromList, insert, keys, lookup, member, toList, (!))
 import System.Console.ANSI
 import System.Directory (getCurrentDirectory, getDirectoryContents)
-import System.Environment (getArgs)
 import System.FilePath (takeExtension)
-import System.Random (Random, RandomGen, getStdGen, randomRIO, randomRs, randoms)
+import System.Random (RandomGen, randomRIO, randomRs, randoms)
 import Text.Read (readMaybe)
 import Prelude hiding (Word, empty, insert, lookup)
 
@@ -169,11 +168,12 @@ scanItems iss@((Page n) : is) =
 scanItems (_ : is) = scanItems is
 scanItems [] = (empty, [])
 
-showItems :: ItemMap -> String
-showItems (m, ps) =
-  (unlines $ concat $ map (\(c, ss) -> show c : (map (\s -> " - " ++ show s) ss)) $ toList m)
+showItems :: WordMap -> ItemMap -> String
+showItems wmap (m, ps) =
+  (unlines $ concat $ map (\(c, ss) -> showCS c : (map (\s -> " - " ++ showCS s) ss)) $ toList m)
     ++ (unwords $ map ungn ps)
   where
+    showCS c = show c ++ " (" ++ (show (length (wmap ! c))) ++ " mots)"
     ungn (Left n) = 'p' : show n
     ungn (Right (n1, n2)) = 'p' : show n1 ++ "-" ++ show n2
 
@@ -211,11 +211,11 @@ getDatabaseContents = do
       items = scanItems $ keys wmap
   return (wmap, count, items)
 
-displayContents :: ItemMap -> Int -> IO ()
-displayContents items count = do
+displayContents :: WordMap ->ItemMap -> Int -> IO ()
+displayContents wmap items count = do
   putStr (show count) `withColor` (Vivid, Yellow)
   putStrLn " mots disponibles :"
-  putStrLn (showItems items) `withColor` (Vivid, Yellow)
+  putStrLn (showItems wmap items) `withColor` (Vivid, Yellow)
 
 promptMode :: IO String
 promptMode = do

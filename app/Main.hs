@@ -6,7 +6,7 @@ import Data.List (elemIndex)
 import PHSLib
 import System.Console.ANSI
 import System.Environment (getArgs)
-import System.Random (RandomGen, getStdGen)
+import System.Random (getStdGen)
 
 main :: IO ()
 main = main' False
@@ -22,7 +22,7 @@ main' :: Bool -> IO ()
 main' ignoreArgs = do
   args <- getArgs
   (wmap, count, items) <- getDatabaseContents
-  if not ignoreArgs && "--hide" `elem` args then return () else displayContents items count
+  if not ignoreArgs && "--hide" `elem` args then return () else displayContents wmap items count
   choice <- getArg args "--choice" promptChoice ignoreArgs
   mode <- getArg args "--mode" promptMode ignoreArgs
   maxnum <- getArg args "--maxnum" promptMax ignoreArgs
